@@ -5,6 +5,7 @@ namespace Telegram\Bot\HttpClients;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\RequestOptions;
@@ -83,6 +84,12 @@ class GuzzleHttpClient implements HttpClientInterface
                 self::$promises[] = $response;
             } else {
                 $response = $response->wait();
+            }
+        } catch (ClientException $e) {
+            $response = $e->getResponse();
+
+            if (! $response instanceof ResponseInterface) {
+                throw new TelegramSDKException($e->getMessage(), $e->getCode());
             }
         } catch (RequestException $e) {
             $response = $e->getResponse();
